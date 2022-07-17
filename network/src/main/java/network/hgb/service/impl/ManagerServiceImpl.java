@@ -161,7 +161,7 @@ public class ManagerServiceImpl implements ManagerService {
         SendSmsRequest request = new SendSmsRequest();
         request.setPhoneNumbers("13060564888");//接收短信的手机号码
         request.setSignName("阿里云短信测试");//短信签名名称
-        request.setTemplateCode("SMS_154950909");//短信模板CODE
+        request.setTemplateCode("SMS_1549509xx");//短信模板CODE
         System.out.println(UUID.randomUUID().toString().replace("-", ""));
         String code = "19230";
         request.setTemplateParam("{\"code\":\"" + code + "\"}");//短信模板变量对应的实际值
