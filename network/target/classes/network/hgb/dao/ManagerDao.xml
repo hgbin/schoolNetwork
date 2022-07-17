@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="network.hgb.dao.ManagerDao">
+    <select id="login" resultType="manager">
+        SELECT *
+        FROM manager
+        WHERE manager_name = #{managerName}
+          and pwd = #{pwd}
+          and manager_status = '正常'
+    </select>
+    <select id="getRouterList" resultType="router">
+        SELECT router.*
+        FROM manager
+                 LEFT JOIN user_router on manager.manager_identity = user_router.identity_id
+                 LEFT JOIN router on user_router.router_id = router.rid
+        WHERE manager_id = #{0}
+    </select>
+
+    <select id="getManagerList" resultType="manager">
+        SELECT *
+        FROM manager
+        <where>
+            <if test="manager.managerId != null and manager.managerId != ''">
+                and manager_id like concat('%',#{manager.managerId},'%')
+            </if>
+            <if test="manager.managerName != null and manager.managerName != ''">
+                and manager_name like concat('%',#{manager.managerName},'%')
+            </if>
+            <if test="manager.managerStatus != null and manager.managerStatus != ''">
+                and manager_status like concat('%',#{manager.managerStatus},'%')
+            </if>
+        </where>
+        LIMIT #{current} , #{pageSize}
+    </select>
+
+    <select id="getTotal" resultType="int">
+        SELECT COUNT(*) total FROM manager
+        <where>
+            <if test="managerId != null and managerId != ''">
+                and manager_id like concat('%',#{managerId},'%')
+            </if>
+            <if test="managerName != null and managerName != ''">
+                and manager_name like concat('%',#{managerName},'%')
+            </if>
+            <if test="managerStatus != null and managerStatus != ''">
+                and manager_status like concat('%',#{managerStatus},'%')
+            </if>
+        </where>
+    </select>
+
+    <update id="updateManager">
+        update manager
+        <set>
+            <if test="managerName != null and managerName != ''">
+                manager_name = #{managerName},
+            </if>
+            <if test="managerIdentity != null and managerIdentity != ''">
+                manager_identity = #{managerIdentity},
+            </if>
+            <if test="managerStatus != null and managerStatus != ''">
+                manager_status = #{managerStatus},
+            </if>
+            <if test="pwd != null and pwd != ''">
+                pwd = #{pwd},
+            </if>
+        </set>
+        where manager_id = #{managerId}
+    </update>
+
+
+    <delete id="deleteManager">
+        DELETE FROM manager WHERE manager_id = #{managerId}
+    </delete>
+
+    <select id="getManagerIdList" resultType="int">
+        select manager_id from manager
+    </select>
+
+    <select id="getManagerNameList" resultType="String">
+        select manager_name from manager
+    </select>
+
+    <insert id="AddManager" keyProperty="managerId" useGeneratedKeys="true">
+        insert into manager(manager_name,pwd,manager_identity) values (#{managerName},#{pwd},#{managerIdentity})
+    </insert>
+</mapper>

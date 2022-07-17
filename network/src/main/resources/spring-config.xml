@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <context:property-placeholder location="classpath:db.properties"/>
+    <!--    扫描包，创建动态代理对象，会自动存储到Spring Ioc容器中-->
+    <!--    指的是mapper映射接口自动创建实现类-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="network.hgb.dao"/>
+        <!--        映射地址需要修改-->
+    </bean>
+    <!--    开启aop-->
+    <aop:aspectj-autoproxy/>
+    <!--    扫描bean注解-->
+    <context:component-scan base-package="network.hgb.service,network.hgb.aop,network.hgb.utils"/>
+    <!--    数据源-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${mysql.driver}"/>
+        <property name="url" value="${mysql.url}"/>
+        <property name="username" value="${mysql.username}"/>
+        <property name="password" value="${mysql.password}"/>
+    </bean>
+    <!--    创建会话工厂-->
+    <bean id="sqlSeesionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!--        载入mybatis配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <!--    xml配置aop-->
+<!--    <aop:config>-->
+<!--        <aop:aspect id="aspect" ref="loginAspect">-->
+<!--            <aop:pointcut id="pc" expression="execution(*-->
+<!--                network.hgb.service.LoginService.login())"/>-->
+<!--            <aop:before method="checkHasRight" pointcut-ref="pc"/>-->
+<!--        </aop:aspect>-->
+<!--    </aop:config>-->
+
+    <!--    事务管理器，依赖于数据源-->
+    <bean id="transactionManger" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManger"/>
+
+</beans>

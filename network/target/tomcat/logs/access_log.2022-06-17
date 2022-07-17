@@ -1,0 +1,16 @@
+127.0.0.1 - - [17/Jun/2022:16:12:37 +0800] "POST /network/login HTTP/1.1" 200 1471 http-bio-8099-exec-1 478
+127.0.0.1 - - [17/Jun/2022:16:12:42 +0800] "POST /network/getInitList HTTP/1.1" 200 116 http-bio-8099-exec-2 56
+127.0.0.1 - - [17/Jun/2022:16:12:47 +0800] "POST /network/getIsCloseFinshed HTTP/1.1" 200 66 http-bio-8099-exec-3 17
+127.0.0.1 - - [17/Jun/2022:16:12:53 +0800] "POST /network/getCustomerList HTTP/1.1" 200 232 http-bio-8099-exec-4 187
+127.0.0.1 - - [17/Jun/2022:16:12:55 +0800] "POST /network/getInitList HTTP/1.1" 200 116 http-bio-8099-exec-5 7
+127.0.0.1 - - [17/Jun/2022:16:13:07 +0800] "POST /network/AddOrder HTTP/1.1" 200 318 http-bio-8099-exec-6 26
+127.0.0.1 - - [17/Jun/2022:16:13:21 +0800] "POST /network/getOrderList HTTP/1.1" 200 868 http-bio-8099-exec-7 50
+127.0.0.1 - - [17/Jun/2022:16:13:21 +0800] "POST /network/getInitList HTTP/1.1" 200 116 http-bio-8099-exec-8 12
+127.0.0.1 - - [17/Jun/2022:16:13:21 +0800] "POST /network/getManagerNameList HTTP/1.1" 200 99 http-bio-8099-exec-9 6
+127.0.0.1 - - [17/Jun/2022:16:13:59 +0800] "POST /network/AddChargeOrder HTTP/1.1" 200 68 http-bio-8099-exec-10 64
+127.0.0.1 - - [17/Jun/2022:16:13:59 +0800] "POST /network/getOrderList HTTP/1.1" 200 1194 http-bio-8099-exec-1 21
+127.0.0.1 - - [17/Jun/2022:16:14:08 +0800] "POST /network/login HTTP/1.1" 200 1471 http-bio-8099-exec-2 16
+127.0.0.1 - - [17/Jun/2022:16:14:09 +0800] "POST /network/getOrderList HTTP/1.1" 200 1194 http-bio-8099-exec-3 58
+127.0.0.1 - - [17/Jun/2022:16:14:09 +0800] "POST /network/getInitList HTTP/1.1" 200 116 http-bio-8099-exec-4 8
+127.0.0.1 - - [17/Jun/2022:16:14:09 +0800] "POST /network/getManagerNameList HTTP/1.1" 200 99 http-bio-8099-exec-5 6
+127.0.0.1 - - [17/Jun/2022:16:14:18 +0800] "POST /network/getIsCloseFinshed HTTP/1.1" 200 66 http-bio-8099-exec-6 4

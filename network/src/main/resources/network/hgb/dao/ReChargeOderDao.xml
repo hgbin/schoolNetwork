@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="network.hgb.dao.ReChargeOderDao">
+    <select id="getChargeOrder" resultMap="orderMap1">
+        SELECT rechargeorder.*, manager.manager_name as mname, customer.customer_name AS cname
+        FROM rechargeorder
+                 LEFT JOIN orders ON orders.order_id = rechargeorder.order_id
+                 LEFT JOIN manager ON manager.manager_id = rechargeorder.manager_id
+                 LEFT JOIN customer ON customer.customer_id = orders.customer_id
+        where rechargeorder.order_id = #{0}
+    </select>
+    <resultMap id="orderMap1" type="order">
+        <result property="managerId" column="manager_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="beginTime" column="begin_time"/>
+        <result property="orderType" column="order_type"/>
+        <result property="orderPrice" column="order_price"/>
+        <association property="manager" javaType="manager">
+            <result property="managerName" column="mname"/>
+        </association>
+    </resultMap>
+
+    <insert id="AddRechargeOrder">
+        insert into rechargeorder(manager_id, create_time, end_time, begin_time, order_type, order_price, order_id)
+        values (#{managerId}, #{createTime}, #{endTime}, #{beginTime}, #{orderType}, #{orderPrice}, #{orderId})
+    </insert>
+
+
+    <select id="getStatisticsOrderList" resultMap="orderMap2">
+        SELECT rechargeorder.order_id as rid, customer_name, manager_name, dormitory_num,
+        rechargeorder.order_type,rechargeorder.create_time,rechargeorder.end_time,rechargeorder.order_price,begin_time
+        FROM
+        rechargeorder
+        LEFT JOIN orders ON orders.order_id = rechargeorder.order_id
+        LEFT JOIN customer ON customer.customer_id = orders.customer_id
+        LEFT JOIN manager ON manager.manager_id = rechargeorder.manager_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(begin_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(begin_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( begin_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(begin_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(begin_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+        LIMIT #{current} , #{pageSize}
+    </select>
+    <resultMap id="orderMap2" type="order">
+        <result property="orderId" column="rid"/>
+        <result property="orderType" column="order_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="orderPrice" column="order_price"/>
+        <result property="beginTime" column="begin_time"/>
+        <association property="customer" javaType="customer">
+            <result property="customerName" column="customer_name"/>
+            <result property="dormitoryNum" column="dormitory_num"/>
+        </association>
+        <association property="manager" javaType="manager">
+            <result property="managerName" column="manager_name"/>
+        </association>
+    </resultMap>
+
+
+    <select id="getStatisticsTotal" resultType="int">
+        SELECT count(*) from rechargeorder
+        LEFT JOIN orders ON orders.order_id = rechargeorder.order_id
+        LEFT JOIN customer ON customer.customer_id = orders.customer_id
+        LEFT JOIN manager ON manager.manager_id = rechargeorder.manager_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(begin_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(begin_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( begin_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(begin_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(begin_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getStatisticsPrice" resultType="int">
+        SELECT sum(rechargeorder.order_price)
+        FROM rechargeorder
+        LEFT JOIN orders ON orders.order_id = rechargeorder.order_id
+        LEFT JOIN customer ON customer.customer_id = orders.customer_id
+        LEFT JOIN manager ON manager.manager_id = rechargeorder.manager_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(begin_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(begin_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( begin_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(begin_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(begin_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+    </select>
+
+
+    <select id="getAllExportList" resultMap="orderMap2">
+        SELECT rechargeorder.order_id as rid, customer_name, manager_name, dormitory_num,
+        rechargeorder.order_type,rechargeorder.create_time,rechargeorder.end_time,rechargeorder.order_price,begin_time
+        FROM
+        rechargeorder
+        LEFT JOIN orders ON orders.order_id = rechargeorder.order_id
+        LEFT JOIN customer ON customer.customer_id = orders.customer_id
+        LEFT JOIN manager ON manager.manager_id = rechargeorder.manager_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(begin_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(begin_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( begin_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(begin_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(begin_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and begin_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+    </select>
+
+</mapper>

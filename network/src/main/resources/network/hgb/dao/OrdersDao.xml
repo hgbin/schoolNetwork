@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="network.hgb.dao.OrdersDao">
+    <select id="getOrdersList" resultMap="orderMap">
+        SELECT orders.*,manager.manager_name as mname, customer.customer_name AS cname, customer.dormitory_num as dnum,
+        DATEDIFF(end_time,NOW()) as timedifference
+        FROM orders
+        left JOIN manager ON manager.manager_id = orders.manager_id
+        left JOIN customer ON customer.customer_id = orders.customer_id
+        <where>
+            <if test="order.orderId != null and order.orderId != ''">
+                and order_id like concat('%',#{order.orderId},'%')
+            </if>
+            <if test="order.orderType != null and order.orderType != ''">
+                and order_type like concat('%',#{order.orderType},'%')
+            </if>
+            <if test="order.createTime != null and order.createTime != ''">
+                and create_time like concat('%',#{order.createTime},'%')
+            </if>
+            <if test="order.endTime != null and order.endTime != ''">
+                and end_time like concat('%',#{order.endTime},'%')
+            </if>
+            <if test="customer.customerName != null and customer.customerName != ''">
+                and customer.customer_id IN
+                (SELECT customer_id FROM customer WHERE customer_name like concat('%',#{customer.customerName},'%'))
+            </if>
+            <if test="manager.managerName != null and manager.managerName != ''">
+                and manager.manager_id IN
+                (SELECT manager_id FROM manager WHERE manager_name like concat('%',#{manager.managerName},'%'))
+            </if>
+        </where>
+        LIMIT #{current} , #{pageSize}
+    </select>
+    <resultMap id="orderMap" type="order">
+        <result property="orderId" column="order_id"/>
+        <result property="managerId" column="manager_id"/>
+        <result property="customerId" column="customer_id"/>
+        <result property="orderType" column="order_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="orderPrice" column="order_price"/>
+        <result property="timeDifference" column="timedifference"/>
+        <association property="customer" javaType="customer">
+            <result property="customerName" column="cname"/>
+            <result property="dormitoryNum" column="dnum"/>
+        </association>
+        <association property="manager" javaType="manager">
+            <result property="managerName" column="mname"/>
+        </association>
+    </resultMap>
+
+
+    <select id="getTotal" resultType="int">
+        SELECT count(*) FROM orders
+        left JOIN manager ON manager.manager_id = orders.manager_id
+        left JOIN customer ON customer.customer_id = orders.customer_id
+        <where>
+            <if test="order.orderId != null and order.orderId != ''">
+                and order_id like concat('%',#{order.orderId},'%')
+            </if>
+            <if test="order.orderType != null and order.orderType != ''">
+                and order_type like concat('%',#{order.orderType},'%')
+            </if>
+            <if test="order.createTime != null and order.createTime != ''">
+                and create_time like concat('%',#{order.createTime},'%')
+            </if>
+            <if test="order.endTime != null and order.endTime != ''">
+                and end_time like concat('%',#{order.endTime},'%')
+            </if>
+            <if test="customer.customerName != null and customer.customerName != ''">
+                and customer.customer_id IN
+                (SELECT customer_id FROM customer WHERE customer_name like concat('%',#{customer.customerName},'%'))
+            </if>
+            <if test="manager.managerName != null and manager.managerName != ''">
+                and manager.manager_id IN
+                (SELECT manager_id FROM manager WHERE manager_name like concat('%',#{manager.managerName},'%'))
+            </if>
+        </where>
+    </select>
+
+    <update id="updateOrder">
+        update orders
+        <set>
+            <if test="managerId != null and managerId != ''">
+                manager_id = #{managerId},
+            </if>
+            <if test="customerId != null and customerId != ''">
+                customer_id = #{customerId},
+            </if>
+            <if test="orderType != null and orderType != ''">
+                order_type = #{orderType},
+            </if>
+            <if test="createTime != null and createTime != ''">
+                create_time = #{createTime},
+            </if>
+            <if test="endTime != null and endTime != ''">
+                end_time = #{endTime},
+            </if>
+            <if test="orderPrice != null and orderPrice != ''">
+                order_price = #{orderPrice},
+            </if>
+        </set>
+        where order_id = #{orderId};
+        update customer
+        <set>
+            <if test="orderType != null and orderType != ''">
+                customer_type = #{orderType},
+            </if>
+        </set>
+        where customer_id = #{customerId}
+    </update>
+
+
+    <delete id="deleteOrder">
+        DELETE
+        FROM orders
+        WHERE order_id = #{orderId}
+    </delete>
+
+    <insert id="AddOrder" keyProperty="orderId" useGeneratedKeys="true">
+        insert into orders(manager_id, customer_id, order_type, create_time, end_time, order_price)
+        values (#{managerId}, #{customerId}, #{orderType}, #{createTime}, #{endTime}, #{orderPrice})
+    </insert>
+
+
+    <select id="IshasOrder" resultType="order">
+        select *
+        from orders
+        where customer_id = #{customerId}
+    </select>
+
+
+    <select id="getStatisticsOrderList" resultMap="orderMap2">
+        SELECT order_id,
+        manager_name,
+        customer_name,
+        dormitory_num,
+        order_type,
+        create_time,
+        end_time,
+        order_price,
+        dormitory_num
+        FROM orders
+        INNER JOIN manager ON manager.manager_id = orders.manager_id
+        INNER JOIN customer ON customer.customer_id = orders.customer_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(create_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(create_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( create_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(create_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(create_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+        LIMIT #{current} , #{pageSize}
+    </select>
+    <resultMap id="orderMap2" type="order">
+        <result property="orderId" column="order_id"/>
+        <result property="orderType" column="order_type"/>
+        <result property="createTime" column="create_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="orderPrice" column="order_price"/>
+        <association property="customer" javaType="customer">
+            <result property="customerName" column="customer_name"/>
+            <result property="dormitoryNum" column="dormitory_num"/>
+        </association>
+        <association property="manager" javaType="manager">
+            <result property="managerName" column="manager_name"/>
+        </association>
+    </resultMap>
+
+
+    <select id="getStatisticsTotal" resultType="int">
+        SELECT count(*)
+        FROM orders
+        INNER JOIN manager ON manager.manager_id = orders.manager_id
+        INNER JOIN customer ON customer.customer_id = orders.customer_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(create_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(create_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( create_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(create_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(create_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <select id="getStatisticsPrice" resultType="int">
+        SELECT sum(order_price)
+        FROM orders
+        INNER JOIN manager ON manager.manager_id = orders.manager_id
+        INNER JOIN customer ON customer.customer_id = orders.customer_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(create_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(create_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( create_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(create_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(create_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+    </select>
+
+
+    <select id="getAllExportList" resultMap="orderMap2">
+        SELECT order_id,
+        manager_name,
+        customer_name,
+        dormitory_num,
+        order_type,
+        create_time,
+        end_time,
+        order_price,
+        dormitory_num
+        FROM orders
+        INNER JOIN manager ON manager.manager_id = orders.manager_id
+        INNER JOIN customer ON customer.customer_id = orders.customer_id
+        <where>
+            <choose>
+                <when test="type == 1">
+                    and DATE(create_time) = DATE(NOW())
+                </when>
+                <when test="type == 2">
+                    and YEARWEEK(DATE(create_time)) = YEARWEEK(now())
+                </when>
+                <when test="type == 3">
+                    and DATE_FORMAT( create_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )
+                </when>
+                <when test="type == 4">
+                    and QUARTER(create_time)=QUARTER(now())
+                </when>
+                <when test="type == 5">
+                    and YEAR(create_time)=YEAR(NOW())
+                </when>
+                <when test="type == 6">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE,INTERVAL 7 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 7">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY) AND CURRENT_DATE
+                </when>
+                <when test="type == 8">
+                    and create_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH) AND CURRENT_DATE
+                </when>
+            </choose>
+        </where>
+    </select>
+
+
+    <select id="checkOrderIsFinshed" resultType="order">
+        SELECT orders.customer_id
+        FROM orders
+                 LEFT JOIN customer ON customer.customer_id = orders.customer_id
+        WHERE DATEDIFF(end_time, NOW()) &lt; 0
+          AND DATE_FORMAT(end_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+          AND customer.customer_status != '禁用';
+    </select>
+
+
+    <update id="updateIsFinshed">
+       <if test="list != null">
+           update customer
+           <set>
+               customer_status = '禁用'
+           </set>
+           <where>
+               and customer_id in
+               <foreach collection="list" index="index" item="order" open="(" separator="," close=")">
+                   #{order.customerId}
+               </foreach>
+           </where>
+       </if>
+    </update>
+
+    <select id="getCloseToFinshed" resultMap="orderMap3">
+        SELECT customer.customer_id cid, customer.customer_name cname,phone_num FROM orders LEFT JOIN customer ON
+        customer.customer_id = orders.customer_id WHERE DATEDIFF(end_time,NOW()) &lt;
+        7 AND DATEDIFF(end_time,NOW()) &gt;= 0
+    </select>
+    <resultMap id="orderMap3" type="order">
+        <association property="customer" javaType="customer">
+            <result property="customerId" column="cid"/>
+            <result property="customerName" column="cname"/>
+            <result property="phoneNum" column="phone_num"/>
+        </association>
+    </resultMap>
+
+    <update id="UpdateChargeOrder">
+        update orders set end_time = #{endTime}, order_type = #{orderType} where order_id = #{orderId}
+    </update>
+</mapper>
